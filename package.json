@@ -7,10 +7,14 @@
     "cjs": "ascjs --no-default esm cjs",
     "test": "node test/index.js"
   },
-  "keywords": ["Weakvalue", "WeakMap", "WeakRef"],
+  "keywords": [
+    "Weakvalue",
+    "WeakMap",
+    "WeakRef"
+  ],
   "author": "Andrea Giammarchi",
   "license": "ISC",
-  "description": "A Map with weak values",
+  "description": "A Map with weakly referenced values, instead of keys",
   "devDependencies": {
     "ascjs": "^4.0.1"
   },
@@ -19,5 +23,13 @@
   "exports": {
     "import": "./esm/index.js",
     "default": "./cjs/index.js"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/weak-value.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WebReflection/weak-value/issues"
+  },
+  "homepage": "https://github.com/WebReflection/weak-value#readme"
 }
