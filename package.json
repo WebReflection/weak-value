@@ -16,7 +16,7 @@
   "license": "ISC",
   "description": "A Map with weakly referenced values, instead of keys",
   "devDependencies": {
-    "ascjs": "^4.0.1"
+    "ascjs": "^5.0.1"
   },
   "module": "./esm/index.js",
   "type": "module",
