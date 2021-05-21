@@ -1,11 +1,17 @@
 export default class WeakValue extends Map {
   #delete = key => {
     this.#registry.unregister(super.get(key));
-    this.delete(key);
+    super.delete(key);
   };
   #registry = new FinalizationRegistry(key => {
-    this.delete(key);
+    super.delete(key);
   });
+  delete(key) {
+    const had = super.has(key);
+    if (had)
+      this.#delete(key);
+    return had;
+  }
   has(key) {
     let has = super.has(key);
     if (has) {
