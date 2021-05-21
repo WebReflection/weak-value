@@ -1,23 +1,31 @@
 'use strict';
 module.exports = class WeakValue extends Map {
+  #delete = key => {
+    this.#registry.unregister(super.get(key));
+    this.delete(key);
+  };
   #registry = new FinalizationRegistry(key => {
-    // the Map could have manually removed the key already
-    // or it could've changed it by the time the previous
-    // reference was GC'd, hence the double check
-    if (this.has(key)) {
-      const value = super.get(key);
-      if (value && value.deref())
-        this.delete(key);
-    }
+    this.delete(key);
   });
+  has(key) {
+    let has = super.has(key);
+    if (has) {
+      const ref = super.get(key);
+      has = ref.deref() !== void 0;
+      if (!has)
+        this.#delete(key);
+    }
+    return has;
+  }
   get(key) {
-    const value = super.get(key);
-    return value && value.deref();
+    const ref = super.get(key);
+    return ref && ref.deref();
   }
   set(key, value) {
-    if (this.has(key))
-      this.#registry.unregister(this.get(key));
-    this.#registry.register(value, key);
-    return super.set(key, new WeakRef(value));
+    if (super.has(key))
+      this.#delete(key);
+    const ref = new WeakRef(value);
+    this.#registry.register(value, key, ref);
+    return super.set(key, ref);
   }
 };
