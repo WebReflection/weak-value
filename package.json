@@ -1,6 +1,6 @@
 {
   "name": "weak-value",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "main": "./cjs/index.js",
   "scripts": {
     "build": "npm run cjs && npm run test",
