@@ -17,6 +17,7 @@ export default class WeakValue extends Map {
   }
   get(key) {
     const ref = super.get(key);
+    if (ref && ref.deref() === undefined && this.#delete(key)) return;
     return ref && ref.deref();
   }
   set(key, value) {
