@@ -3,7 +3,6 @@
 const {iterator} = Symbol;
 
 const noop = () => {};
-const empty = [];
 
 /**
  * A Map extend that transparently uses WeakRef around its values,
@@ -28,15 +27,16 @@ class WeakValue extends Map {
   #registry = new FinalizationRegistry(key => {
     const pair = super.get(key);
     if (pair) {
-      this.delete(key);
+      super.delete(key);
       pair[1](key, this);
     }
   });
 
-  constructor(iterable = empty) {
+  constructor(iterable) {
     super();
-    for (const [key, value] of iterable)
-      this.set(key, value);
+    if (iterable)
+      for (const [key, value] of iterable)
+        this.set(key, value);
   }
 
   clear() {
