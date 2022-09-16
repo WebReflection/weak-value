@@ -1,29 +1,93 @@
 'use strict';
-module.exports = class WeakValue extends Map {
-  #delete = key => {
-    this.#registry.unregister(super.get(key));
-    super.delete(key);
-  };
+/*! (c) Andrea Giammarchi */
+
+const {iterator} = Symbol;
+
+const noop = () => {};
+const empty = [];
+
+/**
+ * A Map extend that transparently uses WeakRef around its values,
+ * providing a way to observe their collection at distance.
+ * @extends {Map}
+ */
+class WeakValue extends Map {
   #registry = new FinalizationRegistry(key => {
-    super.delete(key);
+    const pair = super.get(key);
+    if (pair) {
+      this.delete(key);
+      pair[1](key, this);
+    }
   });
+
+  #drop = (key, ref) => {
+    super.delete(key);
+    this.#registry.unregister(ref);
+  };
+
+  #get = (key, [ref, onValueCollected]) => {
+    const value = ref.deref();
+    if (!value) {
+      this.#drop(key, ref);
+      onValueCollected(key, this);
+    }
+    return value;
+  }
+
+  constructor(iterable = empty) {
+    super();
+    for (const [key, value] of iterable)
+      this.set(key, value);
+  }
+
+  clear() {
+    for (const [_, [ref]] of super[iterator]())
+      this.#registry.unregister(ref);
+    super.clear();
+  }
+
   delete(key) {
-    return super.has(key) && !this.#delete(key);
+    const pair = super.get(key);
+    return !!pair && !this.#drop(key, pair[0]);
   }
-  has(key) {
-    let has = super.has(key);
-    if (has && !super.get(key).deref())
-      has = !!this.#delete(key);
-    return has;
+
+  forEach(callback, context) {
+    for (const [key, value] of this)
+      callback.call(context, value, key, this);
   }
+
   get(key) {
-    const ref = super.get(key);
-    return ref && ref.deref();
+    const pair = super.get(key);
+    return pair && this.#get(key, pair);
   }
-  set(key, value) {
-    this.delete(key);
+
+  has(key) {
+    return !!this.get(key);
+  }
+
+  set(key, value, onValueCollected = noop) {
+    super.delete(key);
     const ref = new WeakRef(value);
     this.#registry.register(value, key, ref);
-    return super.set(key, ref);
+    return super.set(key, [ref, onValueCollected]);
   }
-};
+
+  *[iterator]() {
+    for (const [key, pair] of super[iterator]()) {
+      const value = this.#get(key, pair);
+      if (value)
+        yield [key, value];
+    }
+  }
+
+  *entries() {
+    yield *this[iterator]();
+  }
+
+  *values() {
+    for (const [_, value] of this[iterator]())
+      yield value;
+  }
+}
+
+module.exports = WeakValue;
