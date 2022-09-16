@@ -12,15 +12,7 @@ const empty = [];
  * @extends {Map}
  */
 class WeakValue extends Map {
-  #registry = new FinalizationRegistry(key => {
-    const pair = super.get(key);
-    if (pair) {
-      this.delete(key);
-      pair[1](key, this);
-    }
-  });
-
-  #drop = (key, ref) => {
+  #delete = (key, ref) => {
     super.delete(key);
     this.#registry.unregister(ref);
   };
@@ -28,11 +20,19 @@ class WeakValue extends Map {
   #get = (key, [ref, onValueCollected]) => {
     const value = ref.deref();
     if (!value) {
-      this.#drop(key, ref);
+      this.#delete(key, ref);
       onValueCollected(key, this);
     }
     return value;
   }
+
+  #registry = new FinalizationRegistry(key => {
+    const pair = super.get(key);
+    if (pair) {
+      this.delete(key);
+      pair[1](key, this);
+    }
+  });
 
   constructor(iterable = empty) {
     super();
@@ -48,7 +48,7 @@ class WeakValue extends Map {
 
   delete(key) {
     const pair = super.get(key);
-    return !!pair && !this.#drop(key, pair[0]);
+    return !!pair && !this.#delete(key, pair[0]);
   }
 
   forEach(callback, context) {
