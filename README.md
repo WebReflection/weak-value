@@ -15,9 +15,10 @@ const wv = new WeakValue;
 
 (() => {
   const value = {};
-  wv.set('any-key', value, /* optional */ key => {
+  wv.set('any-key', value, /* optional */ (key, map) => {
     // will log "any-key value collected" once GC kicks in
     console.log(key, 'value collected');
+    console.log(map === wv);  // true
   });
 })();
 ```
