@@ -1,5 +1,9 @@
 # WeakValue
 
+📣 Check out [not-so-weak](https://github.com/WebReflection/not-so-weak) module for better and faster `WValue` alternative
+
+- - -
+
 
 [![Build Status](https://travis-ci.com/WebReflection/weak-value.svg?branch=master)](https://travis-ci.com/WebReflection/weak-value) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/weak-value/badge.svg?branch=master)](https://coveralls.io/github/WebReflection/weak-value?branch=master)
 
